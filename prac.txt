@@ -1,0 +1,84 @@
+CREATE DATABASE RollCallDB;
+USE RollCallDB;
+
+CREATE TABLE O_RollCall (
+    RollNo INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Status VARCHAR(10)
+);
+
+INSERT INTO O_RollCall VALUES (1, 'Alice', 'Present');
+INSERT INTO O_RollCall VALUES (2, 'Bob', 'Absent');
+INSERT INTO O_RollCall VALUES (3, 'Charlie', 'Present');
+
+CREATE TABLE N_RollCall (
+    RollNo INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Status VARCHAR(10)
+);
+
+INSERT INTO N_RollCall VALUES (3, 'Charlie', 'Present');  -- Duplicate → SKIP
+INSERT INTO N_RollCall VALUES (4, 'Diana', 'Present');    -- New → INSERT
+INSERT INTO N_RollCall VALUES (5, 'Eve', 'Absent');       -- New → INSERT
+
+SELECT * FROM O_RollCall;
+SELECT * FROM N_RollCall;
+
+DELIMITER //
+
+CREATE PROCEDURE MergeRollCall()
+BEGIN
+    DECLARE v_RollNo INT;
+    DECLARE v_Name   VARCHAR(50);
+    DECLARE v_Status VARCHAR(10);
+    DECLARE v_Count  INT;
+    DECLARE done     INT DEFAULT 0;
+
+    -- Cursor to fetch all rows from N_RollCall
+    DECLARE cur CURSOR FOR
+        SELECT RollNo, Name, Status FROM N_RollCall;
+
+    -- Exit handler when no more rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur;
+
+    merge_loop: LOOP
+        FETCH cur INTO v_RollNo, v_Name, v_Status;
+
+        IF done = 1 THEN
+            LEAVE merge_loop;
+        END IF;
+
+        -- v_RollNo acts as the PARAMETER to check in O_RollCall
+        SELECT COUNT(*) INTO v_Count
+        FROM O_RollCall
+        WHERE RollNo = v_RollNo;
+
+        IF v_Count = 0 THEN
+            -- Not found → INSERT
+            INSERT INTO O_RollCall (RollNo, Name, Status)
+            VALUES (v_RollNo, v_Name, v_Status);
+            SELECT CONCAT('Inserted → RollNo: ', v_RollNo, ' | Name: ', v_Name) AS Log;
+        ELSE
+            -- Already exists → SKIP
+            SELECT CONCAT('Skipped  → RollNo: ', v_RollNo, ' | Name: ', v_Name) AS Log;
+        END IF;
+
+    END LOOP;
+
+    CLOSE cur;
+END //
+
+DELIMITER ;
+
+CALL MergeRollCall();
+
+SELECT * FROM O_RollCall;
+
+DROP PROCEDURE IF EXISTS MergeRollCall;
+
+DROP TABLE IF EXISTS N_RollCall;
+DROP TABLE IF EXISTS O_RollCall;
+
+DROP DATABASE RollCallDB;
