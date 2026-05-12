@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Personal Details</title>
+</head>
+<body>
+    <h1>Personal Details</h1>
+    <p><b>Name:</b>Sneha Jha</p>
+    <p><b>Age:</b>19</p>
+    <p><b>Gender:</b>Female</p>
+    <p><b>Address:</b>
+    <u>123.Main Street PUNE</u></p>
+    <p><b>Email:</b>
+    <i>abc@gmail.com</i></p>
+    <p><b>Hobbies:</b>
+    <mark>Sports,Reading,Travelling</mark></p>
+</body>
+</html>
