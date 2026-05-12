@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <title>PHP Array Example</title>
@@ -25,7 +25,9 @@ $marks = array(
 echo "<h3>Associative Array:</h3>";
 foreach ($marks as $name => $mark) {
 echo $name . " : " . $mark . "<br>";
-}// Count elements
+}
+echo "<br>"; // Added line break for consistent formatting
+// Count elements
 echo "Total Students: " . count($marks);
 ?>
 </body>
